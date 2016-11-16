@@ -465,7 +465,11 @@ HTMLtoJSX.prototype = {
    * @param {Text} node
    */
   _visitComment: function(node) {
-    this.output += '{/*' + node.textContent.replace('*/', '* /') + '*/}';
+    if (this.config.hideComment) {
+      this.output = this.output.replace(/\s+$/,'');
+    } else {
+      this.output += '{/*' + node.textContent.replace('*/', '* /') + '*/}';
+    }
   },
 
   /**

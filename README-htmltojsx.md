@@ -35,6 +35,7 @@ To use the Node.js module, `require('htmltojsx')` and create a new instance. Thi
 ```js
 var HTMLtoJSX = require('htmltojsx');
 var converter = new HTMLtoJSX({
+  hideComment: true,
   createClass: true,
   outputClassName: 'AwesomeComponent'
 });
