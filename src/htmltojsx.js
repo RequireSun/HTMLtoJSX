@@ -286,7 +286,7 @@ HTMLtoJSX.prototype = {
    * @return {string}
    */
   _getIndentedNewline: function() {
-    return '\n' + repeatString(this.config.indent, this.level + 2);
+    return '\n' + repeatString(this.config.indent, this.level + (this.config.createClass ? 2 : -1));
   },
 
   /**

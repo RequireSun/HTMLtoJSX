@@ -35,12 +35,24 @@ To use the Node.js module, `require('htmltojsx')` and create a new instance. Thi
 ```js
 var HTMLtoJSX = require('htmltojsx');
 var converter = new HTMLtoJSX({
+  indent: '\t',
   hideComment: true,
   createClass: true,
   outputClassName: 'AwesomeComponent'
 });
 var output = converter.convert('<div>Hello world!</div>');
 ```
+
+__参数说明__
+
+1. indent
+   缩进填充符, 默认俩空格.
+1. hideComment
+   传 `true` 时将不会将原文中的注释生成到译文中.
+1. createClass
+   传 `true` 时将会在 jsx 外再创建一层 `React.createClass` 进行包裹.
+1. outputClassName
+   仅当 `createClass` 为 `true` 时有效, 将会在 `React.createClass` 前再加一个变量 `var xxx = ` 来保存这个组件.
 
 Changelog
 =========
