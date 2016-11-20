@@ -13,13 +13,22 @@
 ;(function() {
 
 var HELLO_COMPONENT = "\
-<!-- Hello world -->\n\
-<div class=\"awesome\" style=\"border: 1px solid red\">\n\
-  <label for=\"name\">Enter your name: </label>\n\
-  <input type=\"text\" id=\"name\" />\n\
-</div>\n\
-<p>Enter your HTML here</p>\
-";
+<tr>\n\
+  <th>Month</th>\n\
+  <th>Savings</th>\n\
+</tr>\n\
+<tr>\n\
+  <td>January</td>\n\
+  <td>$100</td>\n\
+</tr>";
+// var HELLO_COMPONENT = "\
+// <!-- Hello world -->\n\
+// <div class=\"awesome\" style=\"border: 1px solid red\">\n\
+//   <label for=\"name\">Enter your name: </label>\n\
+//   <input type=\"text\" id=\"name\" />\n\
+// </div>\n\
+// <p>Enter your HTML here</p>\
+// ";
 
   var HTMLtoJSXComponent = React.createClass({
     getInitialState: function() {

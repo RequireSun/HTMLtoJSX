@@ -35,6 +35,27 @@ var ELEMENT_ATTRIBUTE_MAPPING = {
   }
 };
 
+var CONTAINER_MAPPING = {
+  'thead': 'table',
+  'tbody': 'table',
+  'tfoot': 'table',
+  'caption': 'table',
+  'colgroup': 'table',
+  'col': 'colgroup',
+  'tr': 'tbody',
+  'th': 'tr',
+  'td': 'tr',
+  'dt': 'dl',
+  'dd': 'dl',
+  // noframes
+  // frame
+  // frameset
+  // html
+  // head
+  // body
+  // script
+};
+
 var HTMLDOMPropertyConfig = require('react/lib/HTMLDOMPropertyConfig');
 
 // Populate property map with ReactJS's attribute and property mappings
@@ -173,6 +194,11 @@ var HTMLtoJSX = function(config) {
   if (this.config.createClass === undefined) {
     this.config.createClass = true;
   }
+  if (this.config.outputClassName && this.config.outputClassName + '') {
+    this.config.outputClassName = this.config.outputClassName.replace(/^\w/, function (s) {
+      return s.toUpperCase();
+    });
+  }
   if (!this.config.indent) {
     this.config.indent = '  ';
   }
@@ -195,7 +221,7 @@ HTMLtoJSX.prototype = {
   convert: function(html) {
     this.reset();
 
-    var containerEl = createElement('div');
+    var containerEl = createElement(this._chooseContainer(html));
     containerEl.innerHTML = '\n' + this._cleanInput(html) + '\n';
 
     if (this.config.createClass) {
@@ -227,7 +253,19 @@ HTMLtoJSX.prototype = {
     }
     return this.output;
   },
+  /**
+   * Choose the correct container of input html.
+   * Edited by RequireSun 2016-11-19 17:36
+   * @param {string} html HTML you want to format
+   * @returns {string}
+   * @private
+     */
+  _chooseContainer: function (html) {
+    var regex = /<([^\s>]+)/;
+    regex = (html || '').match(regex);
 
+    return (regex && CONTAINER_MAPPING[regex[1]]) ? CONTAINER_MAPPING[regex[1]] : 'div';
+  },
   /**
    * Cleans up the specified HTML so it's in a format acceptable for
    * converting.

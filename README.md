@@ -1,9 +1,11 @@
 修改版新增特性
 ==============
 
-1. 参数里 `hideComment` 传 `true` 就可以不再把注释也生成到 jsx 里去了; 
+1. 参数里 `hideComment` 传 `true` 就可以不再把注释也生成到 jsx 里去了;
 1. 去掉了不创建包裹类的时候多余的空格;
 1. 找到了作者没有标注出来的用于修改缩进填充字符的 `indent` 属性.
+1. `<thead>` `<tr>` 放在最外层的时候不会被干掉了.
+1. 输入的 `outputClassName` 总是会被变成首字母大写.
 
 What have I changed
 ===================
@@ -11,6 +13,8 @@ What have I changed
 1. Added hide comment ability to HTMLtoJSX, pass `true` to parameter `hideComment` to use it.
 1. Removed the extra spaces while `createElement` option is `false`.
 1. Found the no instruction option `indent` which can set the indent space of output.
+1. Fixed the bugs of the incorrect out put when the `<thead>` `<tr>` tags were the outermost layers.
+1. The `outputClassName` will be capitalized by default.
 
 React-Magic and HTMLtoJSX
 =========================
@@ -77,9 +81,9 @@ IE6, you've come to the wrong place.
 Development
 ===========
 Run `gulp watch` from the root to automatically rebuild the compiled JavaScript
-files as you edit them. To run the unit tests, point a web server to 
-`build/site` then navigate to `test.htm`. If you use the LiveReload browser 
-extension, the tests will automatically reload and rerun when you modify any of 
+files as you edit them. To run the unit tests, point a web server to
+`build/site` then navigate to `test.htm`. If you use the LiveReload browser
+extension, the tests will automatically reload and rerun when you modify any of
 the JavaScript.
 
 Similar Projects
