@@ -6,6 +6,8 @@
 1. 找到了作者没有标注出来的用于修改缩进填充字符的 `indent` 属性.
 1. `<thead>` `<tr>` 放在最外层的时候不会被干掉了.
 1. 输入的 `outputClassName` 总是会被变成首字母大写.
+1. 更新了 HTMLtoJSX 所依赖的 React 和 ReactDOM 版本 (0.14.x -> 15.x.x).
+1. 支持转换 SVG 标签的属性.
 
 What have I changed
 ===================
@@ -15,6 +17,8 @@ What have I changed
 1. Found the no instruction option `indent` which can set the indent space of output.
 1. Fixed the bugs of the incorrect out put when the `<thead>` `<tr>` tags were the outermost layers.
 1. The `outputClassName` will be capitalized by default.
+1. Updated the React and ReactDOM version of HTMLtoJSX (0.14.x -> 15.x.x).
+1. Added supports of attributes of SVG tags.
 
 React-Magic and HTMLtoJSX
 =========================

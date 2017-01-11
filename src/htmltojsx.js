@@ -35,6 +35,66 @@ var ELEMENT_ATTRIBUTE_MAPPING = {
   }
 };
 
+var SVG_ATTRIBUTE_MAPPING = {
+  // 'alignment-baseline': 'alignmentBaseline',
+  // 'baseline-shift': 'baselineShift',
+  // 'clip-path': 'clipPath',
+  // 'clip-rule': 'clipRule',
+  // 'color-interpolation': 'colorInterpolation',
+  // 'color-interpolation-filters': 'colorInterpolationFilters',
+  // 'color-profile': 'colorProfile',
+  // 'color-rendering': 'colorRendering',
+  // 'dominant-baseline': 'dominantBaseline',
+  // 'enable-background': 'enableBackground',
+  // 'fill-opacity': 'fillOpacity',
+  // 'fill-rule': 'fillRule',
+  // 'flood-color': 'floodColor',
+  // 'flood-opacity': 'floodOpacity',
+  // 'font-family': 'fontFamily',
+  // 'font-size': 'fontSize',
+  // 'font-size-adjust': 'fontSizeAdjust',
+  // 'font-stretch': 'fontStretch',
+  // 'font-style': 'fontStyle',
+  // 'font-variant': 'fontVariant',
+  // 'font-weight': 'fontWeight',
+  // 'glyph-orientation-horizontal': 'glyphOrientationHorizontal',
+  // 'glyph-orientation-vertical': 'glyphOrientationVertical',
+  // 'image-rendering': 'imageRendering',
+  // 'letter-spacing': 'letterSpacing',
+  // 'lighting-color': 'lightingColor',
+  // 'marker-end': 'markerEnd',
+  // 'marker-mid': 'markerMid',
+  // 'marker-start': 'markerStart',
+  // 'pointer-events': 'pointerEvents',
+  // 'shape-rendering': 'shapeRendering',
+  // 'stop-color': 'stopColor',
+  // 'stop-opacity': 'stopOpacity',
+  // 'stroke-dasharray': 'strokeDasharray',
+  // 'stroke-dashoffset': 'strokeDashoffset',
+  // 'stroke-linecap': 'strokeLinecap',
+  // 'stroke-linejoin': 'strokeLinejoin',
+  // 'stroke-miterlimit': 'strokeMiterlimit',
+  // 'stroke-opacity': 'strokeOpacity',
+  // 'stroke-width': 'strokeWidth',
+  // 'text-anchor': 'textAnchor',
+  // 'text-decoration': 'textDecoration',
+  // 'text-rendering': 'textRendering',
+  // 'unicode-bidi': 'unicodeBidi',
+  // 'word-spacing': 'wordSpacing',
+  // 'writing-mode': 'writingMode',
+  // 'xmlns:xlink': 'xmlnsXlink',
+};
+
+var SVG_TAG_MAPPING = [
+  'circle', 'defs', 'ellipse', 'g', 'line', 'linearGradient', 'mask',
+  'path', 'pattern', 'polygon', 'polyline', 'radialGradient', 'rect',
+  'stop', 'svg', 'text', 'tspan'
+];
+/**
+ * 遇到 key 为这些标签的最外层需要用 value 对应的标签包裹, 但以下的标签除外, 不能搞
+ * noframes, frame, frameset, html, head, body, script
+ * @type {{thead: string, tbody: string, tfoot: string, caption: string, colgroup: string, col: string, tr: string, th: string, td: string, dt: string, dd: string}}
+ */
 var CONTAINER_MAPPING = {
   'thead': 'table',
   'tbody': 'table',
@@ -47,16 +107,10 @@ var CONTAINER_MAPPING = {
   'td': 'tr',
   'dt': 'dl',
   'dd': 'dl',
-  // noframes
-  // frame
-  // frameset
-  // html
-  // head
-  // body
-  // script
 };
 
-var HTMLDOMPropertyConfig = require('react/lib/HTMLDOMPropertyConfig');
+var HTMLDOMPropertyConfig = require('react-dom/lib/HTMLDOMPropertyConfig');
+var SVGDOMPropertyConfig = require('react-dom/lib/SVGDOMPropertyConfig');
 
 // Populate property map with ReactJS's attribute and property mappings
 // TODO handle/use .Properties value eg: MUST_USE_PROPERTY is not HTML attr
@@ -69,6 +123,17 @@ for (var propname in HTMLDOMPropertyConfig.Properties) {
 
   if (!ATTRIBUTE_MAPPING[mapFrom])
     ATTRIBUTE_MAPPING[mapFrom] = propname;
+}
+
+for (var propname in SVGDOMPropertyConfig.Properties) {
+  if (!SVGDOMPropertyConfig.Properties.hasOwnProperty(propname)) {
+    continue;
+  }
+
+  var mapFrom = SVGDOMPropertyConfig.DOMAttributeNames[propname] || propname.toLowerCase();
+
+  if (!ATTRIBUTE_MAPPING[mapFrom])
+    SVG_ATTRIBUTE_MAPPING[mapFrom] = propname;
 }
 
 /**
@@ -527,15 +592,20 @@ HTMLtoJSX.prototype = {
           (ELEMENT_ATTRIBUTE_MAPPING[tagName] &&
             ELEMENT_ATTRIBUTE_MAPPING[tagName][attribute.name]) ||
           ATTRIBUTE_MAPPING[attribute.name] ||
+          (-1 < SVG_TAG_MAPPING.indexOf(tagName) && SVG_ATTRIBUTE_MAPPING[attribute.name]) ||
           attribute.name;
         var result = name;
 
-        // Numeric values should be output as {123} not "123"
-        if (isNumeric(attribute.value)) {
+        if (-1 < name.indexOf(':')) {
+          // value has ':' will make error
+          result = '';
+        } else if (isNumeric(attribute.value)) {
+          // Numeric values should be output as {123} not "123"
           result += '={' + attribute.value + '}';
         } else if (attribute.value.length > 0) {
           result += '="' + attribute.value.replace(/"/gm, '&quot;') + '"';
         }
+
         return result;
     }
   },
