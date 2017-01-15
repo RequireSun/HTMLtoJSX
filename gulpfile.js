@@ -51,28 +51,6 @@ gulp.task('build-htmltojsx', function() {
     .pipe(livereload({ auto: false }));
 });
 
-gulp.task('build-magic', function() {
-  return gulp.src('src/magic.js')
-    .pipe(gulpWebpack({
-      output: {
-        library: 'ReactMagic',
-        libraryTarget: 'umd',
-        filename: 'magic.js',
-      },
-      plugins: [
-        new webpack.DefinePlugin({
-          IN_BROWSER: true,
-          'process.env.NODE_ENV': '"production"'
-        }),
-      ],
-    }))
-    .pipe(gulp.dest(SITE_OUTPUT_DIR))
-    .pipe(uglify({ preserveComments: 'some' }))
-    .pipe(rename({ extname: '.min.js' }))
-    .pipe(gulp.dest(SITE_OUTPUT_DIR))
-    .pipe(livereload({ auto: false }));
-});
-
 gulp.task('build-site-htmltojsx', function() {
   return gulp.src('src/htmltojsx-component.js')
     .pipe(babel())
@@ -85,20 +63,20 @@ gulp.task('build-site-misc', function() {
     .pipe(livereload({ auto: false }));
 });
 
-gulp.task('build-package', function() {
-  var main = gulp
-    .src([
-      '**/*', '!README*.md', '!node_modules{,/**}', '!build{,/**}',
-      '!site{,/**}', '!temp{,/**}',
-    ])
-    .pipe(gulp.dest(PACKAGE_OUTPUT_DIR));
-
-  var readme = gulp.src('README-htmltojsx.md')
-    .pipe(rename('README.md'))
-    .pipe(gulp.dest(PACKAGE_OUTPUT_DIR));
-
-  return merge(main, readme);
-});
+// gulp.task('build-package', function() {
+//   var main = gulp
+//     .src([
+//       '**/*', '!README*.md', '!node_modules{,/**}', '!build{,/**}',
+//       '!site{,/**}', '!temp{,/**}',
+//     ])
+//     .pipe(gulp.dest(PACKAGE_OUTPUT_DIR));
+//
+//   var readme = gulp.src('README.md')
+//     // .pipe(rename('README.md'))
+//     .pipe(gulp.dest(PACKAGE_OUTPUT_DIR));
+//
+//   return merge(main, readme);
+// });
 
 gulp.task('publish-site', ['build'], function() {
   return gulp.src('build/site/**/*')

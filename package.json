@@ -1,11 +1,11 @@
 {
-  "name": "htmltojsx",
-  "version": "0.2.7-dev",
+  "name": "html-to-jsx",
+  "version": "0.3.0-dev",
   "description": "Converts HTML to JSX for use with React",
   "main": "src/htmltojsx.js",
   "bin": "src/cli.js",
   "dependencies": {
-    "react": "^15.0.0",
+    "react": "^15.4.2",
     "react-dom": "^15.4.2",
     "yargs": "~4.6.0",
     "jsdom-no-contextify": "~3.1.0"
@@ -26,7 +26,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/reactjs/react-magic.git"
+    "url": "git://github.com/RequireSun/HTMLtoJSX.git"
   },
   "keywords": [
     "react",
@@ -35,10 +35,10 @@
     "html",
     "react-component"
   ],
-  "author": "Daniel Lo Nigro <daniel@dan.cx> (http://dan.cx/)",
+  "author": "Require Sun <kelvinsen@outlook.com> (https://github.com/RequireSun)",
   "license": "BSD-3-Clause",
   "bugs": {
-    "url": "https://github.com/reactjs/react-magic/issues"
+    "url": "https://github.com/RequireSun/HTMLtoJSX/issues"
   },
-  "homepage": "https://github.com/reactjs/react-magic"
+  "homepage": "https://github.com/RequireSun/HTMLtoJSX"
 }
