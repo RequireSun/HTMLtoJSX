@@ -11,7 +11,7 @@ module.exports = {
         index: './src/htmltojsx.js',
     },
     output: {
-        library: 'html-to-jsx',
+        library: 'htmltojsx',
     },
     module: {
         loaders: [{

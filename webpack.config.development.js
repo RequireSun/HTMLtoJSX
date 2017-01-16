@@ -3,14 +3,15 @@
  */
 'use strict';
 
+const path       = require('path');
 const webpack    = require('webpack');
 const baseConfig = require('./webpack.config.base');
 
 const config = Object.create(baseConfig);
 
 config.output = Object.assign(config.output, {
-    outputDir     : './dist',
-    outputFilename: 'html-to-jsx.js',
+    path    : path.resolve(__dirname, "dist"),
+    filename: 'htmltojsx.js',
 });
 config.devtool = '#cheap-module-source-map';
 config.devServer = { hot: true, inline: true, };
@@ -19,6 +20,7 @@ config.plugins.push(
         'process.env': {
             NODE_ENV: JSON.stringify('development'),
         },
+        IN_BROWSER: true,
     }),
     new webpack.HotModuleReplacementPlugin()
 );

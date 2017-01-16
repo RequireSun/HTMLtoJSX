@@ -3,16 +3,22 @@
  */
 'use strict';
 
+const path       = require('path');
 const webpack    = require('webpack');
 const baseConfig = require('./webpack.config.base');
 
 const config = Object.create(baseConfig);
 
+config.output = Object.assign(config.output, {
+    path    : path.resolve(__dirname, "dist"),
+    filename: 'htmltojsx.js',
+});
 config.plugins.push(
     new webpack.DefinePlugin({
         'process.env': {
             NODE_ENV: JSON.stringify('production'),
         },
+        IN_BROWSER: true,
     })
 );
 

@@ -231,7 +231,7 @@ if (typeof IN_BROWSER !== 'undefined' && IN_BROWSER) {
   };
 } else {
   // Node.js-like environment, use jsdom.
-  var jsdom = require('jsdom-no-contextify').jsdom;
+  var jsdom = require('jsdom').jsdom;
   var window = jsdom().defaultView;
   createElement = function(tag) {
     return window.document.createElement(tag);
