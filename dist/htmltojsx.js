@@ -1,4 +1,4 @@
-var htmltojsx =
+var HTMLtoJSX =
 /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
