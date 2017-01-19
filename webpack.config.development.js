@@ -14,7 +14,7 @@ config.output = Object.assign(config.output, {
     filename: 'htmltojsx.js',
 });
 config.devtool = '#cheap-module-source-map';
-config.devServer = { hot: true, inline: true, };
+config.devServer = { hot: true, line: true, inline: true, };
 config.plugins.push(
     new webpack.DefinePlugin({
         'process.env': {

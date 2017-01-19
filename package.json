@@ -8,7 +8,7 @@
         "clean": "rimraf lib dist",
         "site": "webpack --progress --colors --config webpack.site.config.base.js",
         "dist": "webpack --progress --colors --config webpack.config.production.js",
-        "dev": "webpack-dev-server --progress --color --port=8008 --hot --inline --config webpack.config.development.js"
+        "dev": "webpack-dev-server --progress --color --line --hot --inline --port=8008 --content-base dist/ --config webpack.config.development.js"
     },
     "dependencies": {
         "react": "^15.4.2",
