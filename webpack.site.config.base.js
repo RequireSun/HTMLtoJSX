@@ -6,17 +6,18 @@
 const path    = require('path');
 const webpack = require('webpack');
 
-const ExtractTextPlugin = require('extract-text-webpack-plugin');
-const htmlExtractor = new ExtractTextPlugin('./[name].html');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+// const ExtractTextPlugin = require('extract-text-webpack-plugin');
+// const htmlExtractor = new ExtractTextPlugin('./[name].html');
 // const lessExtractor = new ExtractTextPlugin('./style/[name].css');
 
 module.exports = {
     entry: {
-        htmltojsx: './site/htmltojsx-component.jsx'
+        'htmltojsx-component': './site/htmltojsx-component.jsx'
     },
     output: {
         path    : './dist',
-        filename: 'htmltojsx-component.js',
+        filename: '[name].js',
     },
     module: {
         loaders: [{
@@ -29,11 +30,11 @@ module.exports = {
             loader : 'babel-loader',
             include: [ path.resolve(__dirname, 'site'), ],
             query  : { presets: [ 'react', 'es2015', ], },
-        }, {
+        }/*, {
             test   : /\.html$/i,
             loader : htmlExtractor.extract([ 'html-loader?minimize=true', ]),
             include: [ path.resolve(__dirname, 'site'), ],
-        }/*, {
+        }, {
            test  : /\.css$/i,
            loader: ExtractTextPlugin.extract(['css-loader']),
         }, {
@@ -45,6 +46,10 @@ module.exports = {
     plugins: [
         new webpack.optimize.OccurrenceOrderPlugin(),   // 根据调用次数分配 id
         new webpack.NoErrorsPlugin(),   // 干掉所有错误输出
-        htmlExtractor,
+        // htmlExtractor,
+        new HtmlWebpackPlugin({
+            filename: 'htmltojsx.html',
+            template: path.resolve(__dirname, 'site/htmltojsx.html'),
+        })
     ],
 };

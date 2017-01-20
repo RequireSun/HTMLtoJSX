@@ -12,7 +12,7 @@
  */
 'use strict';
 
-import './htmltojsx.html';
+// import './htmltojsx.html';
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import ReactPlayground from './react-playground';

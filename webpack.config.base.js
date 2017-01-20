@@ -8,18 +8,27 @@ const webpack = require('webpack');
 
 module.exports = {
     entry : {
-        index: './src/htmltojsx.js',
+        HTMLtoJSX: './src/htmltojsx.js',
+        pageBundle: './site/htmltojsx-component.jsx',
     },
     output: {
-        library: 'HTMLtoJSX',
+        library: '[name]',
     },
     module: {
         loaders: [{
           test   : /\.js$/i,
           loader : 'babel-loader',
-          include: [ path.resolve(__dirname, 'dev/script'), ],
+          include: [
+              path.resolve(__dirname, 'src'),
+              path.resolve(__dirname, 'site'),
+          ],
           query  : { presets: [ 'es2015', ], },
-        },],
+        }, {
+            test   : /\.jsx$/i,
+            loader : 'babel-loader',
+            include: [ path.resolve(__dirname, 'site'), ],
+            query  : { presets: [ 'react', 'es2015', ], },
+        }],
     },
     plugins: [
         new webpack.optimize.OccurrenceOrderPlugin(),   // 根据调用次数分配 id
