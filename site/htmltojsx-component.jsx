@@ -12,10 +12,11 @@
  */
 'use strict';
 
-// import './htmltojsx.html';
+import 'codemirror';
+import 'codemirror/lib/codemirror.css';
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import ReactPlayground from './react-playground';
+import ReactPlayground from './react-playground.jsx';
 
 var HELLO_COMPONENT = "\
 <tr>\n\
@@ -57,6 +58,8 @@ var HTMLtoJSXComponent = React.createClass({
             outputClassName: this.state.outputClassName,
             createClass: this.state.createClass
         });
+        // reactDOM.render(document.getElementById('previewContainer'));
+
         return converter.convert(input);
     },
     render: function () {
@@ -70,8 +73,8 @@ var HTMLtoJSXComponent = React.createClass({
                             onChange={this.onCreateClassChange}/>
                         Create class
                     </label>
+                    &nbsp;
                     <label style={{display: this.state.createClass ? '' : 'none'}}>
-                        ·
                         Class name:
                         <input
                             type="text"
