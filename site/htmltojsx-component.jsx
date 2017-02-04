@@ -14,6 +14,8 @@
 
 import 'codemirror';
 import 'codemirror/lib/codemirror.css';
+import './css/react.css';
+import './css/syntax.css';
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import ReactPlayground from './react-playground.jsx';
