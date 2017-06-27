@@ -1,5 +1,5 @@
 /**
- * Created by kelvinsun on 2016/12/7.
+ * Created by RequireSun on 2016/12/7.
  */
 'use strict';
 
@@ -13,10 +13,12 @@ const cssExtractor      = new ExtractTextPlugin('styleBundle.css');
 const config = Object.create(baseConfig);
 
 config.entry.pageBundle = './site/htmltojsx-component.jsx';
+
 config.output = Object.assign(config.output, {
     path    : path.resolve(__dirname, 'dist'),
     filename: '[name].js',
 });
+
 config.module.loaders.push({
     test   : /\.jsx$/i,
     loader : 'babel-loader',
@@ -38,7 +40,7 @@ config.plugins.push(
         'process.env': {
             NODE_ENV: JSON.stringify('production'),
         },
-        IN_BROWSER: true,
+        // IN_BROWSER: true,
     }),
     new HtmlWebpackPlugin({
         filename: 'htmltojsx.html',

@@ -2,13 +2,16 @@
     "name": "html-to-jsx",
     "version": "0.3.0-dev",
     "description": "Converts HTML to JSX for use with React",
-    "main": "src/htmltojsx.js",
+    "main": "src/index.js",
     "bin": "src/cli.js",
     "scripts": {
         "clean": "rimraf lib dist",
         "prepublish": "npm run clean && npm run dist",
         "dist": "webpack --progress --colors --config webpack.config.production.js",
         "dev": "webpack-dev-server --progress --color --line --hot --inline --port=8008 --content-base dist/ --config webpack.config.development.js"
+    },
+    "browser": {
+        "./src/index.js": "./src/browser.js"
     },
     "dependencies": {
         "react": "^15.4.2",

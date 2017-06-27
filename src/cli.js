@@ -2,7 +2,7 @@
 'use strict';
 
 var fs = require('fs');
-var HTMLtoJSX = require('./htmltojsx.js');
+var HTMLtoJSX = require('./index.js');
 var yargs = require('yargs');
 
 function getArgs() {

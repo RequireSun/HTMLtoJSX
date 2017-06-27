@@ -8,7 +8,8 @@ const webpack = require('webpack');
 
 module.exports = {
     entry : {
-        HTMLtoJSX: './src/htmltojsx.js',
+        // HTMLtoJSX: './src/htmltojsx.js',
+        HTMLtoJSX: './src/index.js',
     },
     output: {
         library: '[name]',

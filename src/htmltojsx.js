@@ -176,413 +176,13 @@ function isNumeric(input) {
         && input !== null
         && (typeof input === 'number' || parseInt(input, 10) == input);
 }
-
-var createElement;
-if (typeof IN_BROWSER !== 'undefined' && IN_BROWSER) {
-    // Browser environment, use document.createElement directly.
-    createElement = function (tag) {
-        return document.createElement(tag);
-    };
-} else {
-    // Node.js-like environment, use jsdom.
-    var jsdom = require('jsdom').jsdom;
-    var window = jsdom().defaultView;
-    createElement = function (tag) {
-        return window.document.createElement(tag);
-    };
-}
-
-var tempEl = createElement('div');
-/**
- * Escapes special characters by converting them to their escaped equivalent
- * (eg. "<" to "&lt;"). Only escapes characters that absolutely must be escaped.
- *
- * @param {string} value
- * @return {string}
- */
-function escapeSpecialChars(value) {
-    // Uses this One Weird Trick to escape text - Raw text inserted as textContent
-    // will have its escaped version in innerHTML.
-    tempEl.textContent = value;
-    return tempEl.innerHTML;
-}
-
-var HTMLtoJSX = function (config) {
-    this.config = config || {};
-
-    if (this.config.createClass === undefined) {
-        this.config.createClass = true;
-    }
-    if (this.config.outputClassName && this.config.outputClassName + '') {
-        this.config.outputClassName = this.config.outputClassName.replace(/^\w/, function (s) {
-            return s.toUpperCase();
-        });
-    }
-    if (!this.config.indent) {
-        this.config.indent = '  ';
-    }
-};
-HTMLtoJSX.prototype = {
-    /**
-     * Reset the internal state of the converter
-     */
-    reset: function () {
-        this.output = '';
-        this.level = 0;
-        this._inPreTag = false;
-    },
-    /**
-     * Main entry point to the converter. Given the specified HTML, returns a
-     * JSX object representing it.
-     * @param {string} html HTML to convert
-     * @return {string} JSX
-     */
-    convert: function (html) {
-        this.reset();
-
-        var containerEl = createElement(this._chooseContainer(html));
-        containerEl.innerHTML = '\n' + this._cleanInput(html) + '\n';
-
-        if (this.config.createClass) {
-            if (this.config.outputClassName) {
-                this.output = 'var ' + this.config.outputClassName + ' = React.createClass({\n';
-            } else {
-                this.output = 'React.createClass({\n';
-            }
-            this.output += this.config.indent + 'render: function() {' + "\n";
-            this.output += this.config.indent + this.config.indent + 'return (\n';
-        }
-
-        if (this._onlyOneTopLevel(containerEl)) {
-            // Only one top-level element, the component can return it directly
-            // No need to actually visit the container element
-            this._traverse(containerEl);
-        } else {
-            // More than one top-level element, need to wrap the whole thing in a
-            // container.
-            this.output += this.config.indent + this.config.indent + this.config.indent;
-            this.level++;
-            this._visit(containerEl);
-        }
-        this.output = this.output.trim() + '\n';
-        if (this.config.createClass) {
-            this.output += this.config.indent + this.config.indent + ');\n';
-            this.output += this.config.indent + '}\n';
-            this.output += '});';
-        }
-        return this.output;
-    },
-    /**
-     * Choose the correct container of input html.
-     * Edited by RequireSun 2016-11-19 17:36
-     * @param {string} html HTML you want to format
-     * @returns {string}
-     * @private
-     */
-    _chooseContainer: function (html) {
-        var regex = /<([^\s>]+)/;
-        regex = (html || '').match(regex);
-
-        return (regex && CONTAINER_MAPPING[regex[1]]) ? CONTAINER_MAPPING[regex[1]] : 'div';
-    },
-    /**
-     * Cleans up the specified HTML so it's in a format acceptable for
-     * converting.
-     *
-     * @param {string} html HTML to clean
-     * @return {string} Cleaned HTML
-     */
-    _cleanInput: function (html) {
-        // Remove unnecessary whitespace
-        html = html.trim();
-        // Ugly method to strip script tags. They can wreak havoc on the DOM nodes
-        // so let's not even put them in the DOM.
-        html = html.replace(/<script([\s\S]*?)<\/script>/g, '');
-        return html;
-    },
-
-    /**
-     * Determines if there's only one top-level node in the DOM tree. That is,
-     * all the HTML is wrapped by a single HTML tag.
-     *
-     * @param {DOMElement} containerEl Container element
-     * @return {boolean}
-     */
-    _onlyOneTopLevel: function (containerEl) {
-        // Only a single child element
-        if (
-            containerEl.childNodes.length === 1
-            && containerEl.childNodes[0].nodeType === NODE_TYPE.ELEMENT
-        ) {
-            return true;
-        }
-        // Only one element, and all other children are whitespace
-        var foundElement = false;
-        for (var i = 0, count = containerEl.childNodes.length; i < count; i++) {
-            var child = containerEl.childNodes[i];
-            if (child.nodeType === NODE_TYPE.ELEMENT) {
-                if (foundElement) {
-                    // Encountered an element after already encountering another one
-                    // Therefore, more than one element at root level
-                    return false;
-                } else {
-                    foundElement = true;
-                }
-            } else if (child.nodeType === NODE_TYPE.TEXT && !isEmpty(child.textContent)) {
-                // Contains text content
-                return false;
-            }
-        }
-        return true;
-    },
-
-    /**
-     * Gets a newline followed by the correct indentation for the current
-     * nesting level
-     *
-     * @return {string}
-     */
-    _getIndentedNewline: function () {
-        return '\n' + repeatString(this.config.indent, this.level + (this.config.createClass ? 2 : -1));
-    },
-
-    /**
-     * Handles processing the specified node
-     *
-     * @param {Node} node
-     */
-    _visit: function (node) {
-        this._beginVisit(node);
-        this._traverse(node);
-        this._endVisit(node);
-    },
-
-    /**
-     * Traverses all the children of the specified node
-     *
-     * @param {Node} node
-     */
-    _traverse: function (node) {
-        this.level++;
-        for (var i = 0, count = node.childNodes.length; i < count; i++) {
-            this._visit(node.childNodes[i]);
-        }
-        this.level--;
-    },
-
-    /**
-     * Handle pre-visit behaviour for the specified node.
-     *
-     * @param {Node} node
-     */
-    _beginVisit: function (node) {
-        switch (node.nodeType) {
-            case NODE_TYPE.ELEMENT:
-                this._beginVisitElement(node);
-                break;
-
-            case NODE_TYPE.TEXT:
-                this._visitText(node);
-                break;
-
-            case NODE_TYPE.COMMENT:
-                this._visitComment(node);
-                break;
-
-            default:
-                console.warn('Unrecognised node type: ' + node.nodeType);
-        }
-    },
-
-    /**
-     * Handles post-visit behaviour for the specified node.
-     *
-     * @param {Node} node
-     */
-    _endVisit: function (node) {
-        switch (node.nodeType) {
-            case NODE_TYPE.ELEMENT:
-                this._endVisitElement(node);
-                break;
-            // No ending tags required for these types
-            case NODE_TYPE.TEXT:
-            case NODE_TYPE.COMMENT:
-                break;
-        }
-    },
-
-    /**
-     * Handles pre-visit behaviour for the specified element node
-     *
-     * @param {DOMElement} node
-     */
-    _beginVisitElement: function (node) {
-        var tagName = node.tagName.toLowerCase();
-        var attributes = [];
-        for (var i = 0, count = node.attributes.length; i < count; i++) {
-            attributes.push(this._getElementAttribute(node, node.attributes[i]));
-        }
-
-        if (tagName === 'textarea') {
-            // Hax: textareas need their inner text moved to a "defaultValue" attribute.
-            attributes.push('defaultValue={' + JSON.stringify(node.value) + '}');
-        }
-        if (tagName === 'style') {
-            // Hax: style tag contents need to be dangerously set due to liberal curly brace usage
-            attributes.push('dangerouslySetInnerHTML={{__html: ' + JSON.stringify(node.textContent) + ' }}');
-        }
-        if (tagName === 'pre') {
-            this._inPreTag = true;
-        }
-
-        this.output += '<' + tagName;
-        if (attributes.length > 0) {
-            this.output += ' ' + attributes.join(' ');
-        }
-        if (!this._isSelfClosing(node)) {
-            this.output += '>';
-        }
-    },
-
-    /**
-     * Handles post-visit behaviour for the specified element node
-     *
-     * @param {Node} node
-     */
-    _endVisitElement: function (node) {
-        var tagName = node.tagName.toLowerCase();
-        // De-indent a bit
-        // TODO: It's inefficient to do it this way :/
-        this.output = trimEnd(this.output, this.config.indent);
-        if (this._isSelfClosing(node)) {
-            this.output += ' />';
-        } else {
-            this.output += '</' + node.tagName.toLowerCase() + '>';
-        }
-
-        if (tagName === 'pre') {
-            this._inPreTag = false;
-        }
-    },
-
-    /**
-     * Determines if this element node should be rendered as a self-closing
-     * tag.
-     *
-     * @param {Node} node
-     * @return {boolean}
-     */
-    _isSelfClosing: function (node) {
-        // If it has children, it's not self-closing
-        // Exception: All children of a textarea are moved to a "defaultValue" attribute, style attributes are dangerously set.
-        return !node.firstChild || node.tagName.toLowerCase() === 'textarea' || node.tagName.toLowerCase() === 'style';
-    },
-
-    /**
-     * Handles processing of the specified text node
-     *
-     * @param {TextNode} node
-     */
-    _visitText: function (node) {
-        var parentTag = node.parentNode && node.parentNode.tagName.toLowerCase();
-        if (parentTag === 'textarea' || parentTag === 'style') {
-            // Ignore text content of textareas and styles, as it will have already been moved
-            // to a "defaultValue" attribute and "dangerouslySetInnerHTML" attribute respectively.
-            return;
-        }
-
-        var text = escapeSpecialChars(node.textContent);
-
-        if (this._inPreTag) {
-            // If this text is contained within a <pre>, we need to ensure the JSX
-            // whitespace coalescing rules don't eat the whitespace. This means
-            // wrapping newlines and sequences of two or more spaces in variables.
-            text = text
-                .replace(/\r/g, '')
-                .replace(/( {2,}|\n|\t|\{|\})/g, function (whitespace) {
-                    return '{' + JSON.stringify(whitespace) + '}';
-                });
-        } else {
-            // Handle any curly braces.
-            text = text
-                .replace(/(\{|\})/g, function (brace) {
-                    return '{\'' + brace + '\'}';
-                });
-            // If there's a newline in the text, adjust the indent level
-            if (text.indexOf('\n') > -1) {
-                text = text.replace(/\n\s*/g, this._getIndentedNewline());
-            }
-        }
-        this.output += text;
-    },
-
-    /**
-     * Handles processing of the specified text node
-     *
-     * @param {Text} node
-     */
-    _visitComment: function (node) {
-        if (this.config.hideComment) {
-            this.output = this.output.replace(/\s+$/, '');
-        } else {
-            this.output += '{/*' + node.textContent.replace('*/', '* /') + '*/}';
-        }
-    },
-
-    /**
-     * Gets a JSX formatted version of the specified attribute from the node
-     *
-     * @param {DOMElement} node
-     * @param {object}     attribute
-     * @return {string}
-     */
-    _getElementAttribute: function (node, attribute) {
-        switch (attribute.name) {
-            case 'style':
-                return this._getStyleAttribute(attribute.value);
-            default:
-                var tagName = node.tagName.toLowerCase();
-                var name =
-                    (ELEMENT_ATTRIBUTE_MAPPING[tagName] &&
-                    ELEMENT_ATTRIBUTE_MAPPING[tagName][attribute.name]) ||
-                    ATTRIBUTE_MAPPING[attribute.name] ||
-                    (-1 < SVG_TAG_MAPPING.indexOf(tagName) && SVG_ATTRIBUTE_MAPPING[attribute.name]) ||
-                    attribute.name;
-                var result = name;
-
-                if (-1 < name.indexOf(':')) {
-                    // value has ':' will make error
-                    result = '';
-                } else if (isNumeric(attribute.value)) {
-                    // Numeric values should be output as {123} not "123"
-                    result += '={' + attribute.value + '}';
-                } else if (attribute.value.length > 0) {
-                    result += '="' + attribute.value.replace(/"/gm, '&quot;') + '"';
-                }
-
-                return result;
-        }
-    },
-
-    /**
-     * Gets a JSX formatted version of the specified element styles
-     *
-     * @param {string} styles
-     * @return {string}
-     */
-    _getStyleAttribute: function (styles) {
-        var jsxStyles = new StyleParser(styles).toJSXString();
-        return 'style={{' + jsxStyles + '}}';
-    }
-};
-
 /**
  * Handles parsing of inline styles
  *
  * @param {string} rawStyle Raw style attribute
  * @constructor
  */
-var StyleParser = function (rawStyle) {
+const StyleParser = function (rawStyle) {
     this.parse(rawStyle);
 };
 StyleParser.prototype = {
@@ -656,4 +256,394 @@ StyleParser.prototype = {
     }
 };
 
-module.exports = HTMLtoJSX;
+module.exports = createElement => {
+    const tempEl = createElement('div');
+    /**
+     * Escapes special characters by converting them to their escaped equivalent
+     * (eg. "<" to "&lt;"). Only escapes characters that absolutely must be escaped.
+     *
+     * @param {string} value
+     * @return {string}
+     */
+    function escapeSpecialChars(value) {
+        // Uses this One Weird Trick to escape text - Raw text inserted as textContent
+        // will have its escaped version in innerHTML.
+        tempEl.textContent = value;
+        return tempEl.innerHTML;
+    }
+
+    const HTMLtoJSX = function (config) {
+        this.config = config || {};
+
+        if (this.config.createClass === undefined) {
+            this.config.createClass = true;
+        }
+        if (this.config.outputClassName && this.config.outputClassName + '') {
+            this.config.outputClassName = this.config.outputClassName.replace(/^\w/, function (s) {
+                return s.toUpperCase();
+            });
+        }
+        if (!this.config.indent) {
+            this.config.indent = '  ';
+        }
+    };
+
+    HTMLtoJSX.prototype = {
+        /**
+         * Reset the internal state of the converter
+         */
+        reset: function () {
+            this.output = '';
+            this.level = 0;
+            this._inPreTag = false;
+        },
+        /**
+         * Main entry point to the converter. Given the specified HTML, returns a
+         * JSX object representing it.
+         * @param {string} html HTML to convert
+         * @return {string} JSX
+         */
+        convert: function (html) {
+            this.reset();
+
+            var containerEl = createElement(this._chooseContainer(html));
+            containerEl.innerHTML = '\n' + this._cleanInput(html) + '\n';
+
+            if (this.config.createClass) {
+                if (this.config.outputClassName) {
+                    this.output = 'var ' + this.config.outputClassName + ' = React.createClass({\n';
+                } else {
+                    this.output = 'React.createClass({\n';
+                }
+                this.output += this.config.indent + 'render: function() {' + "\n";
+                this.output += this.config.indent + this.config.indent + 'return (\n';
+            }
+
+            if (this._onlyOneTopLevel(containerEl)) {
+                // Only one top-level element, the component can return it directly
+                // No need to actually visit the container element
+                this._traverse(containerEl);
+            } else {
+                // More than one top-level element, need to wrap the whole thing in a
+                // container.
+                this.output += this.config.indent + this.config.indent + this.config.indent;
+                this.level++;
+                this._visit(containerEl);
+            }
+            this.output = this.output.trim() + '\n';
+            if (this.config.createClass) {
+                this.output += this.config.indent + this.config.indent + ');\n';
+                this.output += this.config.indent + '}\n';
+                this.output += '});';
+            }
+            return this.output;
+        },
+        /**
+         * Choose the correct container of input html.
+         * Edited by RequireSun 2016-11-19 17:36
+         * @param {string} html HTML you want to format
+         * @returns {string}
+         * @private
+         */
+        _chooseContainer: function (html) {
+            var regex = /<([^\s>]+)/;
+            regex = (html || '').match(regex);
+
+            return (regex && CONTAINER_MAPPING[regex[1]]) ? CONTAINER_MAPPING[regex[1]] : 'div';
+        },
+        /**
+         * Cleans up the specified HTML so it's in a format acceptable for
+         * converting.
+         *
+         * @param {string} html HTML to clean
+         * @return {string} Cleaned HTML
+         */
+        _cleanInput: function (html) {
+            // Remove unnecessary whitespace
+            html = html.trim();
+            // Ugly method to strip script tags. They can wreak havoc on the DOM nodes
+            // so let's not even put them in the DOM.
+            html = html.replace(/<script([\s\S]*?)<\/script>/g, '');
+            return html;
+        },
+
+        /**
+         * Determines if there's only one top-level node in the DOM tree. That is,
+         * all the HTML is wrapped by a single HTML tag.
+         *
+         * @param {DOMElement} containerEl Container element
+         * @return {boolean}
+         */
+        _onlyOneTopLevel: function (containerEl) {
+            // Only a single child element
+            if (
+                containerEl.childNodes.length === 1
+                && containerEl.childNodes[0].nodeType === NODE_TYPE.ELEMENT
+            ) {
+                return true;
+            }
+            // Only one element, and all other children are whitespace
+            var foundElement = false;
+            for (var i = 0, count = containerEl.childNodes.length; i < count; i++) {
+                var child = containerEl.childNodes[i];
+                // Edited by RequireSun 2017-06-27
+                // fixed the bug of returns true when there's only a comment node
+                // and a DOM node at the top level
+                if (child.nodeType === NODE_TYPE.COMMENT || child.nodeType === NODE_TYPE.ELEMENT) {
+                    if (foundElement) {
+                        // Encountered an element after already encountering another one
+                        // Therefore, more than one element at root level
+                        return false;
+                    } else {
+                        foundElement = true;
+                    }
+                } else if (child.nodeType === NODE_TYPE.TEXT && !isEmpty(child.textContent)) {
+                    // Contains text content
+                    return false;
+                }
+            }
+            return true;
+        },
+
+        /**
+         * Gets a newline followed by the correct indentation for the current
+         * nesting level
+         *
+         * @return {string}
+         */
+        _getIndentedNewline: function () {
+            return '\n' + repeatString(this.config.indent, this.level + (this.config.createClass ? 2 : -1));
+        },
+
+        /**
+         * Handles processing the specified node
+         *
+         * @param {Node} node
+         */
+        _visit: function (node) {
+            this._beginVisit(node);
+            this._traverse(node);
+            this._endVisit(node);
+        },
+
+        /**
+         * Traverses all the children of the specified node
+         *
+         * @param {Node} node
+         */
+        _traverse: function (node) {
+            this.level++;
+            for (var i = 0, count = node.childNodes.length; i < count; i++) {
+                this._visit(node.childNodes[i]);
+            }
+            this.level--;
+        },
+
+        /**
+         * Handle pre-visit behaviour for the specified node.
+         *
+         * @param {Node} node
+         */
+        _beginVisit: function (node) {
+            switch (node.nodeType) {
+                case NODE_TYPE.ELEMENT:
+                    this._beginVisitElement(node);
+                    break;
+
+                case NODE_TYPE.TEXT:
+                    this._visitText(node);
+                    break;
+
+                case NODE_TYPE.COMMENT:
+                    this._visitComment(node);
+                    break;
+
+                default:
+                    console.warn('Unrecognised node type: ' + node.nodeType);
+            }
+        },
+
+        /**
+         * Handles post-visit behaviour for the specified node.
+         *
+         * @param {Node} node
+         */
+        _endVisit: function (node) {
+            switch (node.nodeType) {
+                case NODE_TYPE.ELEMENT:
+                    this._endVisitElement(node);
+                    break;
+                // No ending tags required for these types
+                case NODE_TYPE.TEXT:
+                case NODE_TYPE.COMMENT:
+                    break;
+            }
+        },
+
+        /**
+         * Handles pre-visit behaviour for the specified element node
+         *
+         * @param {DOMElement} node
+         */
+        _beginVisitElement: function (node) {
+            var tagName = node.tagName.toLowerCase();
+            var attributes = [];
+            for (var i = 0, count = node.attributes.length; i < count; i++) {
+                attributes.push(this._getElementAttribute(node, node.attributes[i]));
+            }
+
+            if (tagName === 'textarea') {
+                // Hax: textareas need their inner text moved to a "defaultValue" attribute.
+                attributes.push('defaultValue={' + JSON.stringify(node.value) + '}');
+            }
+            if (tagName === 'style') {
+                // Hax: style tag contents need to be dangerously set due to liberal curly brace usage
+                attributes.push('dangerouslySetInnerHTML={{__html: ' + JSON.stringify(node.textContent) + ' }}');
+            }
+            if (tagName === 'pre') {
+                this._inPreTag = true;
+            }
+
+            this.output += '<' + tagName;
+            if (attributes.length > 0) {
+                this.output += ' ' + attributes.join(' ');
+            }
+            if (!this._isSelfClosing(node)) {
+                this.output += '>';
+            }
+        },
+
+        /**
+         * Handles post-visit behaviour for the specified element node
+         *
+         * @param {Node} node
+         */
+        _endVisitElement: function (node) {
+            var tagName = node.tagName.toLowerCase();
+            // De-indent a bit
+            // TODO: It's inefficient to do it this way :/
+            this.output = trimEnd(this.output, this.config.indent);
+            if (this._isSelfClosing(node)) {
+                this.output += ' />';
+            } else {
+                this.output += '</' + node.tagName.toLowerCase() + '>';
+            }
+
+            if (tagName === 'pre') {
+                this._inPreTag = false;
+            }
+        },
+
+        /**
+         * Determines if this element node should be rendered as a self-closing
+         * tag.
+         *
+         * @param {Node} node
+         * @return {boolean}
+         */
+        _isSelfClosing: function (node) {
+            // If it has children, it's not self-closing
+            // Exception: All children of a textarea are moved to a "defaultValue" attribute, style attributes are dangerously set.
+            return !node.firstChild || node.tagName.toLowerCase() === 'textarea' || node.tagName.toLowerCase() === 'style';
+        },
+
+        /**
+         * Handles processing of the specified text node
+         *
+         * @param {TextNode} node
+         */
+        _visitText: function (node) {
+            var parentTag = node.parentNode && node.parentNode.tagName.toLowerCase();
+            if (parentTag === 'textarea' || parentTag === 'style') {
+                // Ignore text content of textareas and styles, as it will have already been moved
+                // to a "defaultValue" attribute and "dangerouslySetInnerHTML" attribute respectively.
+                return;
+            }
+
+            var text = escapeSpecialChars(node.textContent);
+
+            if (this._inPreTag) {
+                // If this text is contained within a <pre>, we need to ensure the JSX
+                // whitespace coalescing rules don't eat the whitespace. This means
+                // wrapping newlines and sequences of two or more spaces in variables.
+                text = text
+                    .replace(/\r/g, '')
+                    .replace(/( {2,}|\n|\t|\{|\})/g, function (whitespace) {
+                        return '{' + JSON.stringify(whitespace) + '}';
+                    });
+            } else {
+                // Handle any curly braces.
+                text = text
+                    .replace(/(\{|\})/g, function (brace) {
+                        return '{\'' + brace + '\'}';
+                    });
+                // If there's a newline in the text, adjust the indent level
+                if (text.indexOf('\n') > -1) {
+                    text = text.replace(/\n\s*/g, this._getIndentedNewline());
+                }
+            }
+            this.output += text;
+        },
+
+        /**
+         * Handles processing of the specified text node
+         *
+         * @param {Text} node
+         */
+        _visitComment: function (node) {
+            if (this.config.hideComment) {
+                this.output = this.output.replace(/\s+$/, '');
+            } else {
+                this.output += '{/*' + node.textContent.replace('*/', '* /') + '*/}';
+            }
+        },
+
+        /**
+         * Gets a JSX formatted version of the specified attribute from the node
+         *
+         * @param {DOMElement} node
+         * @param {object}     attribute
+         * @return {string}
+         */
+        _getElementAttribute: function (node, attribute) {
+            switch (attribute.name) {
+                case 'style':
+                    return this._getStyleAttribute(attribute.value);
+                default:
+                    var tagName = node.tagName.toLowerCase();
+                    var name =
+                        (ELEMENT_ATTRIBUTE_MAPPING[tagName] &&
+                        ELEMENT_ATTRIBUTE_MAPPING[tagName][attribute.name]) ||
+                        ATTRIBUTE_MAPPING[attribute.name] ||
+                        (-1 < SVG_TAG_MAPPING.indexOf(tagName) && SVG_ATTRIBUTE_MAPPING[attribute.name]) ||
+                        attribute.name;
+                    var result = name;
+
+                    if (-1 < name.indexOf(':')) {
+                        // value has ':' will make error
+                        result = '';
+                    } else if (isNumeric(attribute.value)) {
+                        // Numeric values should be output as {123} not "123"
+                        result += '={' + attribute.value + '}';
+                    } else if (attribute.value.length > 0) {
+                        result += '="' + attribute.value.replace(/"/gm, '&quot;') + '"';
+                    }
+
+                    return result;
+            }
+        },
+
+        /**
+         * Gets a JSX formatted version of the specified element styles
+         *
+         * @param {string} styles
+         * @return {string}
+         */
+        _getStyleAttribute: function (styles) {
+            var jsxStyles = new StyleParser(styles).toJSXString();
+            return 'style={{' + jsxStyles + '}}';
+        }
+    };
+
+    return HTMLtoJSX;
+};

@@ -1,5 +1,5 @@
 /**
- * Created by kelvinsun on 2016/12/7.
+ * Created by RequireSun on 2016/12/7.
  */
 'use strict';
 
