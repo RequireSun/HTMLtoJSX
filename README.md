@@ -54,8 +54,25 @@ __参数说明__
 1. outputClassName
    仅当 `createClass` 为 `true` 时有效, 将会在 `React.createClass` 前再加一个变量 `var xxx = ` 来保存这个组件.
 
+TODO
+=========
+
+1. Complete the CLI tool.
+1. Complete the test cases.
+
 Changelog
 =========
+
+0.5.0 - 27th June 2017
+-------------------------
+
+1. Support SVG convert.
+1. Fixed the bug of lost container when there're a DOM element and a comment element both on the root node.
+
+_中文说明_
+
+1. 支持 SVG;
+1. 修正了当最外层根节点为一个注释与一个 DOM 节点时不会添加 container 的 bug.
 
 0.3.0 - 11th January 2017
 -------------------------

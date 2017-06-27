@@ -16,8 +16,6 @@
 <div class="jsxCompiler">
     <h1>HTML to JSX Compiler</h1>
     <div id="jsxCompiler">Loading...</div>
-    <!--<h1>JSX preview</h1>-->
-    <!--<div id="previewContainer"></div>-->
     <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.0.1/react.min.js"></script>-->
     <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.0.1/react-dom.min.js"></script>-->
     <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/3.21.0/codemirror.min.js"></script>-->
@@ -30,7 +28,7 @@
     <!--<script src="htmltojsx-component.js"></script>-->
 </div>
 <% if ('production' === process.env.NODE_ENV) { %>
-<script src="HTMLtoJSX.js"></script>
+<script type="text/javascript" src="HTMLtoJSX.js"></script>
 <% } %>
 </body>
 </html>
