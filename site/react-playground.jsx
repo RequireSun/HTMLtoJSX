@@ -1,6 +1,5 @@
 'use strict';
 
-// import * as Babel from 'babel';
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 

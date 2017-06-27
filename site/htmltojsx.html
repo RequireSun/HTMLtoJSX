@@ -23,11 +23,14 @@
     <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/3.21.0/codemirror.min.js"></script>-->
     <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/3.20.0/mode/javascript/javascript.min.js"></script>-->
     <!--<script src="https://facebook.github.io/react/js/live_editor.js"></script>-->
-    <% if ('development' === process.env.NODE_ENV) { %>
+    <!--<% if ('development' === process.env.NODE_ENV) { %>
     <script src="http://localhost:8008/webpack-dev-server.js"></script>
-    <% } %>
-    <!--<script src="htmltojsx.js"></script>
-    <script src="htmltojsx-component.js"></script>-->
+    <% } %>-->
+    <!--<script src="htmltojsx.js"></script>-->
+    <!--<script src="htmltojsx-component.js"></script>-->
 </div>
+<% if ('production' === process.env.NODE_ENV) { %>
+<script src="HTMLtoJSX.js"></script>
+<% } %>
 </body>
 </html>

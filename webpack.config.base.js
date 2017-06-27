@@ -7,7 +7,7 @@ const path    = require('path');
 const webpack = require('webpack');
 
 module.exports = {
-    entry : {
+    entry: {
         HTMLtoJSX: './src/index.js',
     },
     output: {
@@ -25,7 +25,7 @@ module.exports = {
         }],
     },
     plugins: [
-        new webpack.optimize.OccurrenceOrderPlugin(),   // 根据调用次数分配 id
+        new webpack.optimize.OccurrenceOrderPlugin(true),   // 根据调用次数分配 id
         new webpack.NoEmitOnErrorsPlugin(),   // 干掉所有错误输出
     ],
 };
