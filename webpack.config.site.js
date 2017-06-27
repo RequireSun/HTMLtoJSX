@@ -35,14 +35,14 @@ const config = {
             test: /\.((woff2?|svg)(\?v=[0-9]\.[0-9]\.[0-9]))|(woff2?|svg|jpe?g|png|gif|ico)$/,
             loaders: [
                 // 小于10KB的图片会自动转成dataUrl
-                'url?limit=10240&name=img/[hash:8].[name].[ext]',
-                'image?{bypassOnDebug:true,progressive:true,pngquant:{quality:"65-80",speed:4}}'
+                'url-loader?limit=10240&name=img/[hash:8].[name].[ext]',
+                'image-webpack-loader?{bypassOnDebug:true,progressive:true,pngquant:{quality:"65-80",speed:4}}'
             ],
         }],
     },
     plugins: [
         new webpack.optimize.OccurrenceOrderPlugin(),   // 根据调用次数分配 id
-        new webpack.NoErrorsPlugin(),   // 干掉所有错误输出
+        new webpack.NoEmitOnErrorsPlugin(),   // 干掉所有错误输出
         new webpack.DefinePlugin({
             'process.env': {
                 NODE_ENV: JSON.stringify('production'),

@@ -26,7 +26,7 @@ module.exports = {
     },
     plugins: [
         new webpack.optimize.OccurrenceOrderPlugin(),   // 根据调用次数分配 id
-        new webpack.NoErrorsPlugin(),   // 干掉所有错误输出
+        new webpack.NoEmitOnErrorsPlugin(),   // 干掉所有错误输出
     ],
 };
 

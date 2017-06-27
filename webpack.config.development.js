@@ -13,13 +13,23 @@ const cssExtractor      = new ExtractTextPlugin('styleBundle.css');
 const config = Object.create(baseConfig);
 
 config.entry.pageBundle = './site/htmltojsx-component.jsx';
+
 config.output = Object.assign(config.output, {
     path    : path.resolve(__dirname, 'dist'),
     filename: '[name].js',
 });
+
 config.devtool = '#cheap-module-source-map';
 config.devServer = { hot: true, line: true, inline: true, progress: true, };
 config.module.loaders.push({
+    test   : /\.js$/i,
+    loader : 'babel-loader',
+    include: [
+        path.resolve(__dirname, 'src'),
+        path.resolve(__dirname, 'site'),
+    ],
+    query  : { presets: [ 'es2015', ], },
+}, {
     test   : /\.jsx$/i,
     loader : 'babel-loader',
     include: [ path.resolve(__dirname, 'site'), ],

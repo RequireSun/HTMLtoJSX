@@ -7,3 +7,4 @@ temp
 *.sublime-project
 *.sublime-workspace
 .idea
+npm-debug.log
