@@ -1,6 +1,7 @@
 /**
- * Created by RequireSun on 2016/12/7.
+ * Created by RequireSun on 2017/6/27.
  */
+
 'use strict';
 
 const path       = require('path');
@@ -11,7 +12,7 @@ const config = Object.create(baseConfig);
 
 config.output = Object.assign(config.output, {
     path    : path.resolve(__dirname, 'dist'),
-    filename: '[name].min.js',
+    filename: '[name].js',
 });
 
 config.plugins.push(
@@ -20,9 +21,6 @@ config.plugins.push(
             NODE_ENV: JSON.stringify('production'),
         },
         // IN_BROWSER: true,
-    }),
-    new webpack.optimize.UglifyJsPlugin({
-        warning: false,
     })
 );
 

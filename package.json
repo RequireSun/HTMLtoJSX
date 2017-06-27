@@ -7,6 +7,8 @@
     "scripts": {
         "clean": "rimraf lib dist",
         "prepublish": "npm run clean && npm run dist",
+        "site": "webpack --progress --colors --config webpack.config.site.js",
+        "lib": "webpack --progress --colors --config webpack.config.lib.js",
         "dist": "webpack --progress --colors --config webpack.config.production.js",
         "dev": "webpack-dev-server --progress --color --line --hot --inline --port=8008 --content-base dist/ --config webpack.config.development.js"
     },
